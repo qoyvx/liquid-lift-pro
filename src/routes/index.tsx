@@ -65,6 +65,9 @@ function Home() {
   const totalCompleted = useStore(
     (s) => Object.values(s.sessions).filter((v) => v.completedAt).length,
   );
+  const doneFlags = useStore((s) =>
+    dates.map((d) => (s.sessions[dateKey(d)]?.completedAt ? "1" : "0")).join(""),
+  );
   const tip = tipForDate(today);
   const [tipOpen, setTipOpen] = useState(false);
 
@@ -158,9 +161,8 @@ function Home() {
         <SectionTitle hint={`${wk.done}/${wk.total} sessions`}>Weekly schedule</SectionTitle>
         <div className="grid grid-cols-7 gap-1.5">
           {PROGRAM.map((d, i) => {
-            const date = dates[i] as Date;
             const isToday = d.key === plan.key;
-            const done = Boolean(useStoreSessionDone(dateKey(date)));
+            const done = doneFlags[i] === "1";
             return (
               <Link
                 key={d.key}
@@ -374,10 +376,6 @@ function Home() {
       </section>
     </div>
   );
-}
-
-function useStoreSessionDone(k: string) {
-  return useStore((s) => Boolean(s.sessions[k]?.completedAt));
 }
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {

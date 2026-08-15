@@ -76,13 +76,12 @@ const subscribe = (l: () => void) => {
 };
 
 const getSnapshot = () => state;
+const SERVER_STATE = defaultState();
+const getServerSnapshot = () => SERVER_STATE;
 
 export function useStore<T>(selector: (s: AppState) => T): T {
-  return useSyncExternalStore(
-    subscribe,
-    () => selector(state),
-    () => selector(defaultState()),
-  );
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  return selector(snapshot);
 }
 
 export const setState = (updater: (s: AppState) => AppState) => {

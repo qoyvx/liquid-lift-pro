@@ -2,11 +2,11 @@ import type { SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement> & { active?: boolean };
 
-const base = (p: IconProps) => ({
+const base = ({ active, ...p }: IconProps) => ({
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: p.active ? 2.1 : 1.7,
+  strokeWidth: active ? 2.1 : 1.7,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
   width: 22,
@@ -18,7 +18,7 @@ export const IconHome = (p: IconProps) => (
   <svg {...base(p)}>
     <path d="M3.6 10.4 12 3.8l8.4 6.6" />
     <path d="M5.6 9.8V19a1.4 1.4 0 0 0 1.4 1.4h10a1.4 1.4 0 0 0 1.4-1.4V9.8" />
-    <path d="M9.8 20.4v-5.2h4.4v5.2" opacity={p.active ? 1 : 0.55} />
+    <path d="M9.8 20.4v-5.2h4.4v5.2" opacity={active ? 1 : 0.55} />
   </svg>
 );
 
@@ -35,7 +35,7 @@ export const IconProgress = (p: IconProps) => (
     <path d="M4 19.2h16" />
     <path d="M7.2 19V13" />
     <path d="M12 19V8.4" />
-    <path d="M16.8 19v-8.2" opacity={p.active ? 1 : 0.6} />
+    <path d="M16.8 19v-8.2" opacity={active ? 1 : 0.6} />
   </svg>
 );
 
@@ -43,7 +43,7 @@ export const IconCoach = (p: IconProps) => (
   <svg {...base(p)}>
     <path d="M12 3.6 3.8 7.6 12 11.6l8.2-4z" />
     <path d="M7 9.6v4.6c0 1.7 2.4 3 5 3s5-1.3 5-3V9.6" />
-    <path d="M20.2 7.8v5" opacity={p.active ? 1 : 0.6} />
+    <path d="M20.2 7.8v5" opacity={active ? 1 : 0.6} />
   </svg>
 );
 

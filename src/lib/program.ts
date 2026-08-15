@@ -134,8 +134,8 @@ export const PROGRAM: DayPlan[] = [
 
 export const dayByKey = (key: string) => PROGRAM.find((d) => d.key === key);
 
-export const dayForDate = (date = new Date()) =>
-  PROGRAM.find((d) => d.weekday === date.getDay()) ?? PROGRAM[0];
+export const dayForDate = (date = new Date()): DayPlan =>
+  PROGRAM.find((d) => d.weekday === date.getDay()) ?? (PROGRAM[0] as DayPlan);
 
 export const totalSets = (d: DayPlan) => d.exercises.reduce((s, e) => s + e.sets, 0);
 

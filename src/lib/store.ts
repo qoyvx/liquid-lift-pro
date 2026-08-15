@@ -94,7 +94,8 @@ export const getSession = (s: AppState, key: string, plan: DayPlan): Session => 
     sets[e.id] =
       prev && prev.length === e.sets ? prev : [...emptySets(e.sets)].map((d, i) => prev?.[i] ?? d);
   });
-  return { dayKey: plan.key, sets, completedAt: existing?.completedAt };
+  const completedAt = existing?.completedAt;
+  return completedAt ? { dayKey: plan.key, sets, completedAt } : { dayKey: plan.key, sets };
 };
 
 export const useSession = (key: string, plan: DayPlan) => {
@@ -104,7 +105,7 @@ export const useSession = (key: string, plan: DayPlan) => {
     (exId: string, index: number, patch: Partial<SetEntry>) => {
       setState((s) => {
         const current = getSession(s, key, plan);
-        const arr = current.sets[exId].map((x, i) => (i === index ? { ...x, ...patch } : x));
+        const arr = (current.sets[exId] ?? []).map((x, i) => (i === index ? { ...x, ...patch } : x));
         return {
           ...s,
           sessions: { ...s.sessions, [key]: { ...current, sets: { ...current.sets, [exId]: arr } } },
@@ -162,7 +163,7 @@ export const streak = (s: AppState) => {
   for (let i = 0; i < 60; i++) {
     const key = dateKey(d);
     const plan = dayForDate(d);
-    if (plan.rest) {
+    if (!plan || plan.rest) {
       d.setDate(d.getDate() - 1);
       continue;
     }
@@ -182,6 +183,8 @@ export const streak = (s: AppState) => {
 
 export const weekCompletion = (s: AppState, dates: Date[]) => {
   const trainingDays = PROGRAM.filter((p) => !p.rest).length;
-  const done = dates.filter((d, i) => !PROGRAM[i].rest && s.sessions[dateKey(d)]?.completedAt).length;
+  const done = dates.filter(
+    (d, i) => !PROGRAM[i]?.rest && s.sessions[dateKey(d)]?.completedAt,
+  ).length;
   return { done, total: trainingDays };
 };

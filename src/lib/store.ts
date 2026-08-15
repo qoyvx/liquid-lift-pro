@@ -12,7 +12,11 @@ export type AppState = {
   profile: { name: string; goalKg: number; startDate: string; sleepTarget: number };
   nutrition: { kcal: number; protein: number; carbs: number; fats: number };
   sessions: Record<string, Session>;
+  intake: Record<string, Macros>;
+  weights: Record<string, number>;
 };
+
+export type Macros = { kcal: number; protein: number; carbs: number; fats: number };
 
 const STORAGE_KEY = "elite-gym-tracker-v1";
 
@@ -25,6 +29,8 @@ const defaultState = (): AppState => ({
   },
   nutrition: { kcal: 3250, protein: 165, carbs: 402, fats: 110 },
   sessions: {},
+  intake: {},
+  weights: {},
 });
 
 let state: AppState = defaultState();
@@ -54,6 +60,8 @@ export const hydrateStore = () => {
         profile: { ...defaultState().profile, ...(parsed.profile ?? {}) },
         nutrition: { ...defaultState().nutrition, ...(parsed.nutrition ?? {}) },
         sessions: parsed.sessions ?? {},
+        intake: parsed.intake ?? {},
+        weights: parsed.weights ?? {},
       };
     }
   } catch {
@@ -188,3 +196,28 @@ export const weekCompletion = (s: AppState, dates: Date[]) => {
   ).length;
   return { done, total: trainingDays };
 };
+
+export const emptyMacros = (): Macros => ({ kcal: 0, protein: 0, carbs: 0, fats: 0 });
+
+export const addIntake = (key: string, delta: Partial<Macros>) =>
+  setState((s) => {
+    const current = s.intake[key] ?? emptyMacros();
+    return {
+      ...s,
+      intake: {
+        ...s.intake,
+        [key]: {
+          kcal: Math.max(0, current.kcal + (delta.kcal ?? 0)),
+          protein: Math.max(0, current.protein + (delta.protein ?? 0)),
+          carbs: Math.max(0, current.carbs + (delta.carbs ?? 0)),
+          fats: Math.max(0, current.fats + (delta.fats ?? 0)),
+        },
+      },
+    };
+  });
+
+export const resetIntake = (key: string) =>
+  setState((s) => ({ ...s, intake: { ...s.intake, [key]: emptyMacros() } }));
+
+export const logBodyWeight = (key: string, kg: number) =>
+  setState((s) => ({ ...s, weights: { ...s.weights, [key]: kg } }));

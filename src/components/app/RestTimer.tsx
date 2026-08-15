@@ -23,7 +23,7 @@ function Digits({ seconds, running }: { seconds: number; running: boolean }) {
   const s = String(seconds % 60).padStart(2, "0");
   const chars = [...m, ":", ...s];
   return (
-    <div className="num flex items-center justify-center text-[3.4rem] leading-none font-bold tracking-tight">
+    <div className="num flex items-center justify-center text-[2.7rem] leading-none font-bold tracking-tight">
       {chars.map((c, i) =>
         c === ":" ? (
           <span
@@ -33,7 +33,7 @@ function Digits({ seconds, running }: { seconds: number; running: boolean }) {
             :
           </span>
         ) : (
-          <span key={`${i}-slot`} className="relative block h-[3.6rem] w-[1.7rem] overflow-hidden">
+          <span key={`${i}-slot`} className="relative block h-[3rem] w-[1.35rem] overflow-hidden">
             <span
               key={`${i}-${c}`}
               className="animate-digit absolute inset-0 grid place-items-center"

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { dateKey, PROGRAM, weekDates } from "@/lib/program";
 import { programWeek, streak, useStore, weekCompletion } from "@/lib/store";
-import { Card, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
+import { AnimatedNumber, Card, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
 
 export const Route = createFileRoute("/progress")({
   head: () => ({
@@ -47,7 +47,7 @@ function Progress() {
   const planned = PROGRAM.filter((d) => !d.rest).length * 12;
 
   return (
-    <div className="animate-screen space-y-6">
+    <div className="stagger space-y-6">
       <header className="pt-2">
         <p className="text-[0.62rem] font-bold tracking-[0.24em] text-muted-foreground uppercase">
           12-week block
@@ -55,11 +55,13 @@ function Progress() {
         <h1 className="text-[1.7rem] font-extrabold">Progress</h1>
       </header>
 
-      <Card className="p-5">
+      <Card className="sheen-sweep p-5">
         <div className="flex items-center gap-5">
           <Ring value={completedCount / planned} size={104} stroke={9}>
             <div className="text-center">
-              <p className="num text-2xl leading-none font-extrabold">{completedCount}</p>
+              <p className="num text-2xl leading-none font-extrabold">
+                <AnimatedNumber value={completedCount} />
+              </p>
               <p className="text-[0.5rem] tracking-[0.14em] text-muted-foreground uppercase">
                 sessions
               </p>
@@ -75,9 +77,9 @@ function Progress() {
       </Card>
 
       <div className="grid grid-cols-3 gap-3">
-        <Metric label="Sets" value={`${totalSetsDone}`} />
-        <Metric label="Volume" value={`${Math.round(totalVolume).toLocaleString()}`} sub="kg" />
-        <Metric label="Streak" value={`${st}`} />
+        <Metric label="Sets" value={totalSetsDone} />
+        <Metric label="Volume" value={Math.round(totalVolume)} sub="kg" />
+        <Metric label="Streak" value={st} />
       </div>
 
       <section>
@@ -167,10 +169,12 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Metric({ label, value, sub }: { label: string; value: number; sub?: string }) {
   return (
     <Card className="p-4 text-center">
-      <p className="num text-xl font-extrabold">{value}</p>
+      <p className="num text-xl font-extrabold">
+        <AnimatedNumber value={value} />
+      </p>
       <p className="text-[0.55rem] tracking-[0.14em] text-muted-foreground uppercase">
         {sub ? `${label} · ${sub}` : label}
       </p>

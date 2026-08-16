@@ -25,7 +25,7 @@ function Settings() {
   const nutrition = useStore((s) => s.nutrition);
 
   return (
-    <div className="animate-screen space-y-6">
+    <div className="stagger space-y-6">
       <header className="pt-2">
         <p className="text-[0.62rem] font-bold tracking-[0.24em] text-muted-foreground uppercase">
           Preferences
@@ -128,14 +128,14 @@ function Field({
   type?: string;
 }) {
   return (
-    <label className="grid grid-cols-[minmax(0,1fr)_7.5rem] items-center gap-3">
+    <label className="field-glow grid grid-cols-[minmax(0,1fr)_7.5rem] items-center gap-3 rounded-xl">
       <span className="min-w-0 truncate text-xs font-semibold text-muted-foreground">{label}</span>
       <input
         value={value}
         type={type ?? "text"}
         inputMode={numeric ? "numeric" : undefined}
         onChange={(e) => onChange(numeric ? e.target.value.replace(/[^0-9.]/g, "") : e.target.value)}
-        className="num glass-soft w-full min-w-0 rounded-xl px-3 py-2.5 text-right text-sm font-bold focus:ring-1 focus:ring-[var(--ring)]"
+        className="num glass-soft w-full min-w-0 rounded-xl px-3 py-2.5 text-right text-sm font-bold transition-all duration-300 focus:brightness-110"
       />
     </label>
   );

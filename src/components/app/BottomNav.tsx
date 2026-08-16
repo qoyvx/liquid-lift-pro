@@ -56,13 +56,21 @@ export function BottomNav() {
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),0.65rem)]">
       <div
         ref={containerRef}
-        className="glass glass-sheen pointer-events-auto relative flex w-full max-w-md items-stretch justify-between rounded-[26px] px-1.5 py-1.5"
-        style={{ ["--glass-blur" as string]: "16px" }}
+        className="nav-glass nav-edge pointer-events-auto relative flex w-full max-w-md items-stretch justify-between px-1.5 py-1.5"
       >
+        {/* Layer 3: gradient lighting + internal glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit]"
+          style={{
+            background:
+              "radial-gradient(120% 90% at 50% -30%, color-mix(in oklab, white 14%, transparent), transparent 60%), radial-gradient(80% 120% at 50% 130%, color-mix(in oklab, oklch(0.6 0.18 275) 16%, transparent), transparent 70%)",
+          }}
+        />
         {/* continuous liquid indicator */}
         <div
           aria-hidden
-          className="absolute top-1.5 bottom-1.5 rounded-[20px]"
+          className="absolute top-1.5 bottom-1.5 overflow-hidden rounded-[20px]"
           style={{
             left: 0,
             width: box.w,
@@ -75,11 +83,23 @@ export function BottomNav() {
             boxShadow: traveling
               ? "inset 0 1px 0 var(--glass-edge), 0 6px 22px -8px oklch(0.65 0.18 280 / 0.75)"
               : "inset 0 1px 0 var(--glass-edge), 0 8px 20px -10px oklch(0.68 0.17 258 / 0.85)",
-            backdropFilter: "blur(6px) saturate(180%)",
-            WebkitBackdropFilter: "blur(6px) saturate(180%)",
+            backdropFilter: "blur(4px) saturate(190%) brightness(1.12)",
             willChange: "transform, width",
           }}
-        />
+        >
+          {/* indicator's own travelling reflection */}
+          <span
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(105deg, transparent 30%, color-mix(in oklab, white 28%, transparent) 50%, transparent 70%)",
+              opacity: traveling ? 1 : 0.25,
+              transform: `translate3d(${traveling ? "12%" : "-12%"},0,0)`,
+              transition: "transform 430ms var(--ease-liquid), opacity 430ms var(--ease-liquid)",
+            }}
+          />
+        </div>
         {TABS.map((t, i) => {
           const active = i === activeIndex;
           return (

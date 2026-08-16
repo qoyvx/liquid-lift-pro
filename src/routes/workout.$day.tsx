@@ -36,7 +36,7 @@ function WorkoutSession() {
 
   if (plan.rest) {
     return (
-      <div className="animate-screen space-y-5 pt-2">
+      <div className="stagger space-y-5 pt-2">
         <BackLink />
         <Card className="p-6 text-center">
           <Pill>{plan.label}</Pill>
@@ -57,10 +57,10 @@ function WorkoutSession() {
   }
 
   return (
-    <div className="animate-screen space-y-6">
+    <div className="stagger space-y-6">
       <BackLink />
 
-      <Card className="p-5">
+      <Card className="sheen-sweep p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <Pill>{plan.label} · {plan.type}</Pill>
@@ -102,10 +102,18 @@ function WorkoutSession() {
           const doneCount = sets.filter((s) => s.done).length;
           const expanded = open === exercise.id;
           return (
-            <div key={exercise.id} className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)]">
+            <div
+              key={exercise.id}
+              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-300"
+              style={
+                expanded
+                  ? { boxShadow: "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)" }
+                  : undefined
+              }
+            >
               <button
                 onClick={() => setOpen(expanded ? null : exercise.id)}
-                className="press flex w-full items-center gap-3 p-4 text-left"
+                className="press-deep flex w-full items-center gap-3 p-4 text-left"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{exercise.name}</p>
@@ -163,14 +171,21 @@ function WorkoutSession() {
                           if (next) start(exercise.rest, exercise.name, `Set ${i + 1} of ${exercise.sets}`);
                         }}
                         aria-label={`Complete set ${i + 1}`}
-                        className="press grid h-9 w-9 place-items-center rounded-xl"
+                        className="press-deep grid h-9 w-9 place-items-center rounded-xl transition-all duration-300"
                         style={{
                           background: s.done ? "var(--gradient-primary)" : "oklch(1 0 0 / 0.07)",
                           color: s.done ? "oklch(0.14 0.035 265)" : "oklch(0.68 0.03 262)",
                           border: "1px solid color-mix(in oklab, white 12%, transparent)",
+                          boxShadow: s.done
+                            ? "0 8px 20px -10px oklch(0.7 0.18 270 / 0.9)"
+                            : "none",
                         }}
                       >
-                        <IconCheck width={15} height={15} />
+                        <IconCheck
+                          width={15}
+                          height={15}
+                          className={s.done ? "animate-pop" : ""}
+                        />
                       </button>
                     </div>
                   ))}
@@ -211,12 +226,14 @@ function NumField({
   placeholder: string;
 }) {
   return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, "").slice(0, 5))}
-      inputMode="decimal"
-      placeholder={placeholder}
-      className="num glass-soft w-full min-w-0 rounded-xl px-2 py-2 text-center text-sm font-bold placeholder:text-[0.62rem] placeholder:font-medium placeholder:text-muted-foreground/70 focus:ring-1 focus:ring-[var(--ring)]"
-    />
+    <div className="field-glow min-w-0 rounded-xl">
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value.replace(/[^0-9.,]/g, "").slice(0, 5))}
+        inputMode="decimal"
+        placeholder={placeholder}
+        className="num glass-soft w-full min-w-0 rounded-xl px-2 py-2 text-center text-sm font-bold transition-all duration-300 placeholder:text-[0.62rem] placeholder:font-medium placeholder:text-muted-foreground/70 focus:brightness-110"
+      />
+    </div>
   );
 }

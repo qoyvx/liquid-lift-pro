@@ -23,6 +23,22 @@ export function useSpringValue(target: number, duration = 900) {
   return value;
 }
 
+/** Smoothly counts a number from its previous value to the new one. */
+export function AnimatedNumber({
+  value,
+  decimals = 0,
+  className,
+  duration = 750,
+}: {
+  value: number;
+  decimals?: number;
+  className?: string;
+  duration?: number;
+}) {
+  const v = useSpringValue(value, duration);
+  return <span className={cn("num tabular-nums", className)}>{v.toFixed(decimals)}</span>;
+}
+
 export function ProgressBar({
   value,
   className,
@@ -117,7 +133,8 @@ export function Card({
       onClick={onClick}
       className={cn(
         "glass glass-sheen w-full overflow-hidden p-4 text-left",
-        onClick && "press",
+        "transition-shadow duration-300",
+        onClick && "press-deep",
         className,
       )}
     >

@@ -21,7 +21,7 @@ import {
   weekCompletion,
 } from "@/lib/store";
 import { tipForDate } from "@/lib/coaching";
-import { Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
+import { AnimatedNumber, Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
 import { IconBolt, IconChevron, IconFlame, IconMoon, IconPlate, IconTimer } from "@/components/app/icons";
 
 export const Route = createFileRoute("/")({
@@ -74,7 +74,7 @@ function Home() {
   const trainingDaysPerBlock = PROGRAM.filter((d) => !d.rest).length * 12;
 
   return (
-    <div className="animate-screen space-y-7">
+    <div className="stagger space-y-7">
       {/* Header */}
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-2">
         <div className="min-w-0">
@@ -98,7 +98,7 @@ function Home() {
 
       {/* Hero */}
       <section>
-        <Card className="p-5">
+        <Card className="sheen-sweep p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <Pill>{plan.label} · {plan.type}</Pill>
@@ -112,7 +112,7 @@ function Home() {
             <Ring value={plan.rest ? 1 : stats.pct} size={82} stroke={7}>
               <div className="text-center">
                 <p className="num text-lg leading-none font-extrabold">
-                  {plan.rest ? "—" : `${Math.round(stats.pct * 100)}%`}
+                  {plan.rest ? "—" : <><AnimatedNumber value={stats.pct * 100} />%</>}
                 </p>
                 <p className="text-[0.55rem] tracking-[0.12em] text-muted-foreground uppercase">
                   {plan.rest ? "rest" : "done"}
@@ -168,8 +168,8 @@ function Home() {
                 key={d.key}
                 to="/workout/$day"
                 params={{ day: d.key }}
-                className={`press flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 text-center ${
-                  isToday ? "glass" : "glass-soft"
+                className={`press-deep flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 text-center transition-all duration-500 ${
+                  isToday ? "glass scale-[1.04]" : "glass-soft"
                 }`}
                 style={
                   isToday
@@ -184,7 +184,7 @@ function Home() {
                   {d.label}
                 </span>
                 <span
-                  className="grid h-5 w-5 place-items-center rounded-full text-[0.5rem] font-bold"
+                  className={`grid h-5 w-5 place-items-center rounded-full text-[0.5rem] font-bold transition-all duration-500 ${done ? "animate-pop" : ""}`}
                   style={{
                     background: d.rest
                       ? "oklch(1 0 0 / 0.08)"
@@ -216,7 +216,7 @@ function Home() {
               </div>
             </Ring>
             <div className="min-w-0 flex-1 space-y-3">
-              <Stat label="Workouts completed" value={`${totalCompleted}`} sub={`of ${trainingDaysPerBlock} planned`} />
+              <Stat label="Workouts completed" value={totalCompleted} sub={`of ${trainingDaysPerBlock} planned`} />
               <ProgressBar value={totalCompleted / trainingDaysPerBlock} tone="violet" />
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <IconFlame width={14} height={14} />
@@ -378,12 +378,13 @@ function Home() {
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ label, value, sub }: { label: string; value: number; sub?: string }) {
   return (
     <div>
       <p className="text-[0.62rem] tracking-[0.14em] text-muted-foreground uppercase">{label}</p>
       <p className="num text-xl font-extrabold">
-        {value} <span className="text-[0.62rem] font-medium text-muted-foreground">{sub}</span>
+        <AnimatedNumber value={value} />{" "}
+        <span className="text-[0.62rem] font-medium text-muted-foreground">{sub}</span>
       </p>
     </div>
   );
@@ -423,18 +424,20 @@ function MacroCard({
           {target} {unit}
         </p>
       </div>
-      <p className="num mt-1 text-2xl font-extrabold">{Math.round(value)}</p>
+      <p className="num mt-1 text-2xl font-extrabold">
+        <AnimatedNumber value={value} duration={600} />
+      </p>
       <ProgressBar value={target ? value / target : 0} className="mt-2 h-1.5" />
       <div className="mt-3 grid grid-cols-2 gap-1.5">
         <button
           onClick={() => onAdd(-step)}
-          className="press glass-soft num rounded-xl py-1.5 text-[0.65rem] font-bold"
+          className="press-deep glass-soft num rounded-xl py-1.5 text-[0.65rem] font-bold"
         >
           −{step}
         </button>
         <button
           onClick={() => onAdd(step)}
-          className="press glass-soft num rounded-xl py-1.5 text-[0.65rem] font-bold"
+          className="press-deep glass-soft num rounded-xl py-1.5 text-[0.65rem] font-bold"
         >
           +{step}
         </button>

@@ -18,37 +18,81 @@ type TimerCtx = {
 const Ctx = createContext<TimerCtx>({ start: () => {}, active: false });
 export const useRestTimer = () => useContext(Ctx);
 
+const SLOT_W = "1.22rem";
+const SLOT_H = "2.6rem";
+
+function DigitSlot({ value }: { value: string }) {
+  const [current, setCurrent] = useState(value);
+  const [outgoing, setOutgoing] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrent((prev) => {
+      if (prev === value) return prev;
+      setOutgoing(prev);
+      return value;
+    });
+  }, [value]);
+
+  useEffect(() => {
+    if (outgoing === null) return;
+    const t = setTimeout(() => setOutgoing(null), 340);
+    return () => clearTimeout(t);
+  }, [outgoing]);
+
+  return (
+    <span
+      className="relative block overflow-hidden"
+      style={{ width: SLOT_W, height: SLOT_H }}
+      aria-hidden
+    >
+      {outgoing !== null && (
+        <span
+          key={`out-${outgoing}`}
+          className="animate-digit-out absolute inset-0 grid place-items-center"
+          style={{ lineHeight: SLOT_H }}
+        >
+          {outgoing}
+        </span>
+      )}
+      <span
+        key={`in-${current}`}
+        className={outgoing !== null ? "animate-digit-in absolute inset-0 grid place-items-center" : "absolute inset-0 grid place-items-center"}
+        style={{ lineHeight: SLOT_H }}
+      >
+        {current}
+      </span>
+    </span>
+  );
+}
+
 function Digits({ seconds, running }: { seconds: number; running: boolean }) {
   const m = String(Math.floor(seconds / 60)).padStart(2, "0");
   const s = String(seconds % 60).padStart(2, "0");
-  const chars = [...m, ":", ...s];
   return (
-    <div className="num flex items-center justify-center text-[2.7rem] leading-none font-bold tracking-tight">
-      {chars.map((c, i) =>
-        c === ":" ? (
-          <span
-            key="colon"
-            className={running ? "animate-colon px-1 opacity-70" : "px-1 opacity-70"}
-          >
-            :
-          </span>
-        ) : (
-          <span key={`${i}-slot`} className="relative block h-[3rem] w-[1.35rem] overflow-hidden">
-            <span
-              key={`${i}-${c}`}
-              className="animate-digit absolute inset-0 grid place-items-center"
-            >
-              {c}
-            </span>
-          </span>
-        ),
-      )}
+    <div
+      className="num flex items-center justify-center text-[2.15rem] font-bold tracking-normal tabular-nums"
+      style={{ lineHeight: 1 }}
+      role="timer"
+      aria-label={`${m}:${s}`}
+    >
+      <DigitSlot value={m[0]!} />
+      <DigitSlot value={m[1]!} />
+      <span
+        aria-hidden
+        className={running ? "animate-colon grid place-items-center" : "grid place-items-center"}
+        style={{ width: "0.62rem", height: SLOT_H, lineHeight: SLOT_H, opacity: running ? undefined : 0.55 }}
+      >
+        :
+      </span>
+      <DigitSlot value={s[0]!} />
+      <DigitSlot value={s[1]!} />
     </div>
   );
 }
 
 export function RestTimerProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [total, setTotal] = useState(90);
   const [remaining, setRemaining] = useState(90);
   const [running, setRunning] = useState(false);
@@ -94,8 +138,18 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
     setTotal(seconds);
     setRemaining(seconds);
     setMeta({ exercise, setLabel });
+    setClosing(false);
     setOpen(true);
     setRunning(true);
+  }, []);
+
+  const close = useCallback(() => {
+    setClosing(true);
+    setRunning(false);
+    setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, 320);
   }, []);
 
   const adjust = (delta: number) => {
@@ -118,15 +172,16 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
       {open && (
         <div className="pointer-events-none fixed inset-0 z-50 flex items-end justify-center">
           <div
-            className="absolute inset-0"
+            className={closing ? "animate-scrim-out absolute inset-0" : "animate-scrim absolute inset-0"}
             style={{
               backdropFilter: "blur(10px) saturate(130%)",
-              WebkitBackdropFilter: "blur(10px) saturate(130%)",
               background: "oklch(0.08 0.03 265 / 0.45)",
             }}
-            onClick={() => setOpen(false)}
+            onClick={close}
           />
-          <div className="animate-sheet glass glass-strong glass-sheen pointer-events-auto relative mx-3 mb-[calc(env(safe-area-inset-bottom,0px)+6.2rem)] w-full max-w-md rounded-[30px] p-5">
+          <div
+            className={`${closing ? "animate-sheet-out" : "animate-sheet sheen-sweep"} glass glass-strong pointer-events-auto relative mx-3 mb-[calc(env(safe-area-inset-bottom,0px)+6.2rem)] w-full max-w-md rounded-[30px] p-5`}
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[0.62rem] font-bold tracking-[0.2em] text-muted-foreground uppercase">
@@ -136,7 +191,7 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
                 <p className="text-xs text-muted-foreground">{meta.setLabel}</p>
               </div>
               <button
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className="press glass-soft grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground"
                 aria-label="Close timer"
               >
@@ -145,7 +200,8 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
             </div>
 
             <div className="relative my-4 grid place-items-center">
-              <svg width={128} height={128} className="-rotate-90">
+              <div className="relative grid place-items-center" style={{ width: 128, height: 128 }}>
+              <svg width={128} height={128} className="-rotate-90 block">
                 <circle cx="64" cy="64" r={R} stroke="oklch(1 0 0 / 0.08)" strokeWidth="9" fill="none" />
                 <circle
                   cx="64"
@@ -168,6 +224,7 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
               </svg>
               <div className="absolute inset-0 grid place-items-center">
                 <Digits seconds={remaining} running={running} />
+              </div>
               </div>
             </div>
 
@@ -204,7 +261,7 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
               <button
                 onClick={() => {
                   setRunning(false);
-                  setOpen(false);
+                  close();
                 }}
                 className="press glass-soft flex items-center justify-center gap-2 rounded-2xl py-3 text-xs font-bold tracking-[0.12em] uppercase"
               >

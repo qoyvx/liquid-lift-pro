@@ -30,7 +30,7 @@ function Coach() {
   const week = useStore(programWeek);
 
   return (
-    <div className="animate-screen space-y-6">
+    <div className="stagger space-y-6">
       <header className="pt-2">
         <p className="text-[0.62rem] font-bold tracking-[0.24em] text-muted-foreground uppercase">
           Training education
@@ -38,7 +38,7 @@ function Coach() {
         <h1 className="text-[1.7rem] font-extrabold">Coach</h1>
       </header>
 
-      <Card className="p-5">
+      <Card className="sheen-sweep p-5">
         <Pill>Current phase</Pill>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           You are in <span className="font-bold text-foreground">week {week} of 12</span>. Intensity
@@ -53,10 +53,18 @@ function Coach() {
         {PRINCIPLES.map((p) => {
           const expanded = open === p.id;
           return (
-            <div key={p.id} className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)]">
+            <div
+              key={p.id}
+              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-300"
+              style={
+                expanded
+                  ? { boxShadow: "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)" }
+                  : undefined
+              }
+            >
               <button
                 onClick={() => setOpen(expanded ? null : p.id)}
-                className="press flex w-full items-start gap-3 p-4 text-left"
+                className="press-deep flex w-full items-start gap-3 p-4 text-left"
               >
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate text-base font-extrabold">{p.title}</h2>

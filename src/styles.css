@@ -70,6 +70,7 @@
   --glass-shadow: 0 18px 40px -18px oklch(0.06 0.05 265 / 0.9), 0 2px 10px -4px oklch(0.05 0.04 265 / 0.7);
   --glass-blur: 14px;
   --glass-blur-strong: 26px;
+  --glass-blur-nav: 20px;
   --glass-sat: 165%;
   --glass-tint: color-mix(in oklab, var(--primary) 8%, transparent);
 
@@ -147,7 +148,6 @@
     var(--glass-tint),
     var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 color-mix(in oklab, white 6%, transparent);
   border-radius: var(--radius-2xl);
@@ -159,7 +159,6 @@
     linear-gradient(180deg, color-mix(in oklab, white 7%, transparent), transparent 48%),
     color-mix(in oklab, oklch(0.4 0.08 265) 16%, transparent);
   backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
   border: 1px solid color-mix(in oklab, white 10%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent), 0 10px 24px -18px oklch(0.05 0.04 265 / 0.9);
   border-radius: var(--radius-xl);
@@ -171,9 +170,52 @@
     var(--glass-tint),
     color-mix(in oklab, oklch(0.3 0.07 265) 55%, transparent);
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
   border: 1px solid var(--glass-border);
   box-shadow: 0 30px 60px -24px oklch(0.04 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge);
+}
+
+/* ---------- Navigation glass (layered) ---------- */
+/* Layer 1: real backdrop blur on the surface element itself. */
+@utility nav-glass {
+  position: relative;
+  isolation: isolate;
+  border-radius: 26px;
+  backdrop-filter: blur(var(--glass-blur-nav)) saturate(190%) brightness(1.05);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, white 12%, transparent), transparent 38%),
+    linear-gradient(180deg, transparent 62%, oklch(0.06 0.03 265 / 0.28)),
+    color-mix(in oklab, oklch(0.34 0.075 266) 42%, transparent);
+  border: 1px solid color-mix(in oklab, white 16%, transparent);
+  box-shadow:
+    0 -1px 0 color-mix(in oklab, white 4%, transparent),
+    0 22px 48px -20px oklch(0.04 0.04 265 / 0.95),
+    inset 0 1px 0 color-mix(in oklab, white 48%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, white 8%, transparent),
+    inset 0 14px 26px -18px color-mix(in oklab, white 22%, transparent);
+}
+
+/* Layer 4: curved edge reflection */
+@utility nav-edge {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, white 55%, transparent),
+      transparent 34%,
+      transparent 66%,
+      color-mix(in oklab, white 22%, transparent)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.75;
+  }
 }
 
 @utility glass-sheen {
@@ -218,6 +260,14 @@
   from { transform: translateY(-70%); opacity: 0; filter: blur(2px); }
   to { transform: translateY(0); opacity: 1; filter: blur(0); }
 }
+@keyframes digit-in {
+  from { transform: translate3d(0, -88%, 0); opacity: 0; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes digit-out {
+  from { transform: translate3d(0, 0, 0); opacity: 1; }
+  to { transform: translate3d(0, 88%, 0); opacity: 0; }
+}
 @keyframes colon-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
@@ -234,13 +284,90 @@
   from { opacity: 0; transform: translate3d(0, 12px, 0); }
   to { opacity: 1; transform: none; }
 }
+@keyframes sheet-down {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 96%, 0) scale(0.985); }
+}
+@keyframes scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scrim-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes sheen-sweep {
+  from { transform: translate3d(-120%, 0, 0); opacity: 0; }
+  35% { opacity: 0.9; }
+  to { transform: translate3d(120%, 0, 0); opacity: 0; }
+}
+@keyframes pop-check {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 .animate-orb { animation: float-orb 22s ease-in-out infinite; }
 .animate-digit { animation: digit-roll 0.32s var(--ease-liquid); }
+.animate-digit-in { animation: digit-in 0.34s var(--ease-liquid) both; }
+.animate-digit-out { animation: digit-out 0.34s var(--ease-liquid) both; }
 .animate-colon { animation: colon-pulse 1s ease-in-out infinite; }
 .animate-screen { animation: screen-in 0.42s var(--ease-liquid) both; }
 .animate-sheet { animation: sheet-up 0.44s var(--ease-liquid) both; }
+.animate-sheet-out { animation: sheet-down 0.32s cubic-bezier(0.4, 0, 1, 1) both; }
+.animate-scrim { animation: scrim-in 0.36s var(--ease-liquid) both; }
+.animate-scrim-out { animation: scrim-out 0.3s ease both; }
 .animate-rise { animation: rise-in 0.45s var(--ease-liquid) both; }
+.animate-pop { animation: pop-check 0.36s var(--ease-spring) both; }
+
+/* Event-driven sheen sweep used on entrance of major glass surfaces */
+.sheen-sweep {
+  position: relative;
+  overflow: hidden;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 38%, color-mix(in oklab, white 16%, transparent) 50%, transparent 62%);
+    animation: sheen-sweep 1.15s var(--ease-liquid) 0.15s both;
+  }
+}
+
+/* Coordinated, fast entrance stagger for direct children */
+.stagger > * {
+  animation: rise-in 0.42s var(--ease-liquid) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger > *:nth-child(4) { animation-delay: 0.14s; }
+.stagger > *:nth-child(5) { animation-delay: 0.18s; }
+.stagger > *:nth-child(6) { animation-delay: 0.22s; }
+.stagger > *:nth-child(7) { animation-delay: 0.26s; }
+.stagger > *:nth-child(8) { animation-delay: 0.3s; }
+.stagger > *:nth-child(n + 9) { animation-delay: 0.34s; }
+
+/* Interactive feedback */
+.press-deep {
+  transition:
+    transform 0.24s var(--ease-liquid),
+    box-shadow 0.24s var(--ease-liquid),
+    filter 0.24s var(--ease-liquid);
+  &:active {
+    transform: scale(0.972);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 16px -12px oklch(0.05 0.04 265 / 0.9);
+  }
+}
+
+.field-glow {
+  transition:
+    box-shadow 0.28s var(--ease-liquid),
+    background-color 0.28s var(--ease-liquid),
+    transform 0.2s var(--ease-liquid);
+  &:focus-within {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--primary) 60%, transparent),
+      0 0 22px -6px color-mix(in oklab, var(--primary) 70%, transparent),
+      inset 0 1px 0 var(--glass-edge);
+    transform: translateY(-1px);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

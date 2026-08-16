@@ -31,7 +31,7 @@ function Workouts() {
   );
 
   return (
-    <div className="animate-screen space-y-6">
+    <div className="stagger space-y-6">
       <header className="pt-2">
         <p className="text-[0.62rem] font-bold tracking-[0.24em] text-muted-foreground uppercase">
           Training split

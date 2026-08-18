@@ -97,7 +97,6 @@ export const PROGRAM: DayPlan[] = [
     rest: true,
     exercises: [],
   },
-  ] = [
   {
     key: "sat",
     weekday: 6,

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { dateKey, dayByKey, PROGRAM, rirForWeek, totalSets, type DayPlan } from "@/lib/program";
-import { programWeek, sessionStats, useSession, useStore } from "@/lib/store";
+import { lastPerformance, programWeek, sessionStats, useSession, useStore } from "@/lib/store";
 import { Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
 import { IconCheck, IconChevron, IconReset, IconTimer } from "@/components/app/icons";
 import { useRestTimer } from "@/components/app/RestTimer";
@@ -33,6 +33,7 @@ function WorkoutSession() {
   const stats = sessionStats(session);
   const { start } = useRestTimer();
   const [open, setOpen] = useState<string | null>(plan.exercises[0]?.id ?? null);
+  const history = useStore((s) => s.sessions);
 
   if (plan.rest) {
     return (
@@ -142,6 +143,20 @@ function WorkoutSession() {
                     <span />
                   </div>
                   {sets.map((s, i) => (
+                    <SetRow
+                      key={i}
+                      index={i}
+                      entry={s}
+                      prev={lastPerformance({ sessions: history } as never, exercise.id, key, i)}
+                      onChange={(patch) => updateSet(exercise.id, i, patch)}
+                      onToggle={(next) => {
+                        updateSet(exercise.id, i, { done: next });
+                        if (next) start(exercise.rest, exercise.name, `Set ${i + 1} of ${exercise.sets}`);
+                      }}
+                      repsPlaceholder={exercise.reps}
+                    />
+                  ))}
+                  {false && sets.map((s, i) => (
                     <div
                       key={i}
                       className="grid grid-cols-[1.6rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.2rem] items-center gap-1.5"

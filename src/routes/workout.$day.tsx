@@ -1,7 +1,15 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { dateKey, dayByKey, PROGRAM, rirForWeek, totalSets, type DayPlan } from "@/lib/program";
-import { lastPerformance, programWeek, sessionStats, useSession, useStore } from "@/lib/store";
+import {
+  lastPerformance,
+  programWeek,
+  sessionStats,
+  useSession,
+  useStore,
+  type AppState,
+  type SetEntry,
+} from "@/lib/store";
 import { Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
 import { IconCheck, IconChevron, IconReset, IconTimer } from "@/components/app/icons";
 import { useRestTimer } from "@/components/app/RestTimer";
@@ -34,6 +42,12 @@ function WorkoutSession() {
   const { start } = useRestTimer();
   const [open, setOpen] = useState<string | null>(plan.exercises[0]?.id ?? null);
   const history = useStore((s) => s.sessions);
+  const prevFor = (
+    sessions: typeof history,
+    exerciseId: string,
+    beforeKey: string,
+    setIndex: number,
+  ) => lastPerformance({ sessions } as unknown as AppState, exerciseId, beforeKey, setIndex);
 
   if (plan.rest) {
     return (
@@ -147,7 +161,7 @@ function WorkoutSession() {
                       key={i}
                       index={i}
                       entry={s}
-                      prev={lastPerformance({ sessions: history } as never, exercise.id, key, i)}
+                      prev={prevFor(history, exercise.id, key, i)}
                       onChange={(patch) => updateSet(exercise.id, i, patch)}
                       onToggle={(next) => {
                         updateSet(exercise.id, i, { done: next });
@@ -155,54 +169,6 @@ function WorkoutSession() {
                       }}
                       repsPlaceholder={exercise.reps}
                     />
-                  ))}
-                  {false && sets.map((s, i) => (
-                    <div
-                      key={i}
-                      className="grid grid-cols-[1.6rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.2rem] items-center gap-1.5"
-                    >
-                      <span className="num text-center text-xs font-bold text-muted-foreground">
-                        {i + 1}
-                      </span>
-                      <NumField
-                        value={s.weight}
-                        onChange={(v) => updateSet(exercise.id, i, { weight: v })}
-                        placeholder="—"
-                      />
-                      <NumField
-                        value={s.reps}
-                        onChange={(v) => updateSet(exercise.id, i, { reps: v })}
-                        placeholder={exercise.reps}
-                      />
-                      <NumField
-                        value={s.rir}
-                        onChange={(v) => updateSet(exercise.id, i, { rir: v })}
-                        placeholder="RIR"
-                      />
-                      <button
-                        onClick={() => {
-                          const next = !s.done;
-                          updateSet(exercise.id, i, { done: next });
-                          if (next) start(exercise.rest, exercise.name, `Set ${i + 1} of ${exercise.sets}`);
-                        }}
-                        aria-label={`Complete set ${i + 1}`}
-                        className="press-deep grid h-9 w-9 place-items-center rounded-xl transition-all duration-300"
-                        style={{
-                          background: s.done ? "var(--gradient-primary)" : "oklch(1 0 0 / 0.07)",
-                          color: s.done ? "oklch(0.14 0.035 265)" : "oklch(0.68 0.03 262)",
-                          border: "1px solid color-mix(in oklab, white 12%, transparent)",
-                          boxShadow: s.done
-                            ? "0 8px 20px -10px oklch(0.7 0.18 270 / 0.9)"
-                            : "none",
-                        }}
-                      >
-                        <IconCheck
-                          width={15}
-                          height={15}
-                          className={s.done ? "animate-pop" : ""}
-                        />
-                      </button>
-                    </div>
                   ))}
                   <button
                     onClick={() => start(exercise.rest, exercise.name, "Manual rest")}
@@ -216,6 +182,52 @@ function WorkoutSession() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function SetRow({
+  index,
+  entry,
+  prev,
+  onChange,
+  onToggle,
+  repsPlaceholder,
+}: {
+  index: number;
+  entry: SetEntry;
+  prev: { weight: string; reps: string; rir: string; date: string } | null;
+  onChange: (patch: Partial<SetEntry>) => void;
+  onToggle: (next: boolean) => void;
+  repsPlaceholder: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="grid grid-cols-[1.6rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.2rem] items-center gap-1.5">
+        <span className="num text-center text-xs font-bold text-muted-foreground">{index + 1}</span>
+        <NumField value={entry.weight} onChange={(v) => onChange({ weight: v })} placeholder={prev?.weight || "—"} />
+        <NumField value={entry.reps} onChange={(v) => onChange({ reps: v })} placeholder={prev?.reps || repsPlaceholder} />
+        <NumField value={entry.rir} onChange={(v) => onChange({ rir: v })} placeholder={prev?.rir || "RIR"} />
+        <button
+          onClick={() => onToggle(!entry.done)}
+          aria-label={`Complete set ${index + 1}`}
+          className="press-deep grid h-9 w-9 place-items-center rounded-xl transition-all duration-300"
+          style={{
+            background: entry.done ? "var(--gradient-primary)" : "oklch(1 0 0 / 0.07)",
+            color: entry.done ? "oklch(0.14 0.035 265)" : "oklch(0.68 0.03 262)",
+            border: "1px solid color-mix(in oklab, white 12%, transparent)",
+            boxShadow: entry.done ? "0 8px 20px -10px oklch(0.7 0.18 270 / 0.9)" : "none",
+          }}
+        >
+          <IconCheck width={15} height={15} className={entry.done ? "animate-pop" : ""} />
+        </button>
+      </div>
+      {prev && (prev.weight || prev.reps) && (
+        <p className="num pl-[1.9rem] text-[0.58rem] tracking-[0.06em] text-muted-foreground/80">
+          Previous · {prev.weight ? `${prev.weight} kg` : "—"} × {prev.reps || "—"}
+          {prev.rir ? ` · RIR ${prev.rir}` : ""}
+        </p>
+      )}
     </div>
   );
 }

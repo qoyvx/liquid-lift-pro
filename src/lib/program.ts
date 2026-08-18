@@ -28,7 +28,6 @@ const ex = (id: string, name: string, sets: number, reps: string, rest: number):
 });
 
 export const PROGRAM: DayPlan[] = [
-  ,
   {
     key: "mon",
     weekday: 1,
@@ -39,7 +38,6 @@ export const PROGRAM: DayPlan[] = [
     rest: true,
     exercises: [],
   },
-  ,
   {
     key: "tue",
     weekday: 2,
@@ -56,7 +54,6 @@ export const PROGRAM: DayPlan[] = [
       ex("tue-5", "Dumbbell Lateral Raise", 2, "15–20", 45),
     ],
   },
-  ,
   {
     key: "wed",
     weekday: 3,
@@ -74,7 +71,6 @@ export const PROGRAM: DayPlan[] = [
       ex("wed-6", "Flat Bench DB Crunch", 3, "15–20", 60),
     ],
   },
-  ,
   {
     key: "thu",
     weekday: 4,
@@ -91,7 +87,6 @@ export const PROGRAM: DayPlan[] = [
       ex("thu-5", "Leg Extension (Finisher)", 2, "20–30", 60),
     ],
   },
-  ,
   {
     key: "fri",
     weekday: 5,
@@ -120,7 +115,6 @@ export const PROGRAM: DayPlan[] = [
       ex("sat-6", "Dumbbell Bicep Curl", 2, "10–12", 60),
     ],
   },
-  ,
   {
     key: "sun",
     weekday: 0,

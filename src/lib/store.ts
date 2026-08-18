@@ -19,6 +19,7 @@ export type AppState = {
 export type Macros = { kcal: number; protein: number; carbs: number; fats: number };
 
 const STORAGE_KEY = "elite-gym-tracker-v1";
+const SCHEMA_VERSION = 1;
 
 const defaultState = (): AppState => ({
   profile: {
@@ -39,12 +40,26 @@ const listeners = new Set<() => void>();
 
 const emit = () => listeners.forEach((l) => l());
 
-const persist = () => {
+/** Debounced, non-destructive persistence (survives app close / process kill). */
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+const writeNow = () => {
+  if (typeof window === "undefined") return;
+  if (persistTimer) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: SCHEMA_VERSION, ...state }));
   } catch {
     /* ignore */
   }
+};
+
+const persist = () => {
+  if (typeof window === "undefined") return;
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(writeNow, 250);
 };
 
 export const hydrateStore = () => {
@@ -68,6 +83,13 @@ export const hydrateStore = () => {
     /* ignore */
   }
   emit();
+
+  // Never lose in-flight edits when Android backgrounds / kills the WebView.
+  window.addEventListener("pagehide", writeNow);
+  window.addEventListener("beforeunload", writeNow);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") writeNow();
+  });
 };
 
 const subscribe = (l: () => void) => {
@@ -220,3 +242,28 @@ export const resetIntake = (key: string) =>
 
 export const logBodyWeight = (key: string, kg: number) =>
   setState((s) => ({ ...s, weights: { ...s.weights, [key]: kg } }));
+
+/**
+ * Most recent logged performance for an exercise before `beforeKey`.
+ * Returns null when there is no history — never invents values.
+ */
+export const lastPerformance = (
+  s: AppState,
+  exerciseId: string,
+  beforeKey: string,
+  setIndex: number,
+): { weight: string; reps: string; rir: string; date: string } | null => {
+  const keys = Object.keys(s.sessions)
+    .filter((k) => k < beforeKey)
+    .sort()
+    .reverse();
+  for (const k of keys) {
+    const arr = s.sessions[k]?.sets?.[exerciseId];
+    if (!arr?.length) continue;
+    const entry = arr[setIndex] ?? [...arr].reverse().find((e) => e.weight || e.reps);
+    if (entry && (entry.weight || entry.reps)) {
+      return { weight: entry.weight, reps: entry.reps, rir: entry.rir, date: k };
+    }
+  }
+  return null;
+};

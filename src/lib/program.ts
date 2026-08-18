@@ -17,7 +17,7 @@ export type DayPlan = {
   exercises: Exercise[];
 };
 
-export type DayKey = "sat" | "sun" | "mon" | "tue" | "wed" | "thu" | "fri";
+export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 const ex = (id: string, name: string, sets: number, reps: string, rest: number): Exercise => ({
   id,
@@ -28,39 +28,6 @@ const ex = (id: string, name: string, sets: number, reps: string, rest: number):
 });
 
 export const PROGRAM: DayPlan[] = [
-  {
-    key: "sat",
-    weekday: 6,
-    label: "SAT",
-    fullLabel: "Saturday",
-    title: "UPPER",
-    type: "STRENGTH",
-    rest: false,
-    exercises: [
-      ex("sat-1", "Flat Bench Press", 3, "6–8", 120),
-      ex("sat-2", "One-Arm Dumbbell Row", 3, "8–10", 90),
-      ex("sat-3", "Shoulder Press Machine", 3, "8–10", 120),
-      ex("sat-4", "Lat Pull Down Machine", 3, "8–10", 90),
-      ex("sat-5", "Seated Dip Machine", 2, "10–12", 90),
-      ex("sat-6", "Dumbbell Bicep Curl", 2, "10–12", 60),
-    ],
-  },
-  {
-    key: "sun",
-    weekday: 0,
-    label: "SUN",
-    fullLabel: "Sunday",
-    title: "LOWER",
-    type: "STRENGTH",
-    rest: false,
-    exercises: [
-      ex("sun-1", "Leg Press Machine", 3, "8–10", 180),
-      ex("sun-2", "Barbell RDL", 3, "10–12", 120),
-      ex("sun-3", "Leg Curl Machine", 3, "10–12", 90),
-      ex("sun-4", "Leg Extension Machine", 3, "12–15", 90),
-      ex("sun-5", "Standing Calf Machine", 4, "10–12", 60),
-    ],
-  },
   {
     key: "mon",
     weekday: 1,
@@ -130,12 +97,60 @@ export const PROGRAM: DayPlan[] = [
     rest: true,
     exercises: [],
   },
+  {
+    key: "sat",
+    weekday: 6,
+    label: "SAT",
+    fullLabel: "Saturday",
+    title: "UPPER",
+    type: "STRENGTH",
+    rest: false,
+    exercises: [
+      ex("sat-1", "Flat Bench Press", 3, "6–8", 120),
+      ex("sat-2", "One-Arm Dumbbell Row", 3, "8–10", 90),
+      ex("sat-3", "Shoulder Press Machine", 3, "8–10", 120),
+      ex("sat-4", "Lat Pull Down Machine", 3, "8–10", 90),
+      ex("sat-5", "Seated Dip Machine", 2, "10–12", 90),
+      ex("sat-6", "Dumbbell Bicep Curl", 2, "10–12", 60),
+    ],
+  },
+  {
+    key: "sun",
+    weekday: 0,
+    label: "SUN",
+    fullLabel: "Sunday",
+    title: "LOWER",
+    type: "STRENGTH",
+    rest: false,
+    exercises: [
+      ex("sun-1", "Leg Press Machine", 3, "8–10", 180),
+      ex("sun-2", "Barbell RDL", 3, "10–12", 120),
+      ex("sun-3", "Leg Curl Machine", 3, "10–12", 90),
+      ex("sun-4", "Leg Extension Machine", 3, "12–15", 90),
+      ex("sun-5", "Standing Calf Machine", 4, "10–12", 60),
+    ],
+  },
 ];
+
+/**
+ * SINGLE SOURCE OF TRUTH — JS Date.getDay() → training day.
+ * 0 Sun = LOWER, 1 Mon = REST, 2 Tue = PUSH, 3 Wed = PULL,
+ * 4 Thu = LEGS, 5 Fri = REST, 6 Sat = UPPER.
+ */
+export const WEEKDAY_SCHEDULE: Record<number, DayKey> = {
+  0: "sun",
+  1: "mon",
+  2: "tue",
+  3: "wed",
+  4: "thu",
+  5: "fri",
+  6: "sat",
+};
 
 export const dayByKey = (key: string) => PROGRAM.find((d) => d.key === key);
 
 export const dayForDate = (date = new Date()): DayPlan =>
-  PROGRAM.find((d) => d.weekday === date.getDay()) ?? (PROGRAM[0] as DayPlan);
+  dayByKey(WEEKDAY_SCHEDULE[date.getDay()] as string) ?? (PROGRAM[0] as DayPlan);
 
 export const totalSets = (d: DayPlan) => d.exercises.reduce((s, e) => s + e.sets, 0);
 
@@ -146,12 +161,12 @@ export const dateKey = (date = new Date()) => {
   return `${y}-${m}-${dd}`;
 };
 
-/** Dates of the current training week (Saturday → Friday). */
+/** Dates of the current training week (Monday → Sunday). */
 export const weekDates = (today = new Date()) => {
-  const offsetToSat = (today.getDay() + 1) % 7; // Sat -> 0
+  const offsetToMon = (today.getDay() + 6) % 7; // Mon -> 0
   const start = new Date(today);
   start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - offsetToSat);
+  start.setDate(start.getDate() - offsetToMon);
   return PROGRAM.map((_, i) => {
     const d = new Date(start);
     d.setDate(start.getDate() + i);

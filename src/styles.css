@@ -88,6 +88,9 @@
 
   html {
     background-color: oklch(0.09 0.025 265);
+    /* Smooth, hardware-composited scrolling on Android WebView */
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
   }
 
   body {
@@ -146,8 +149,9 @@
   background:
     linear-gradient(180deg, var(--glass-inner), transparent 42%),
     var(--glass-tint),
-    var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    color-mix(in oklab, oklch(0.36 0.075 265) 46%, transparent);
+  /* No backdrop blur on content cards: depth comes from gradients, edges and
+     shadows. Blur is reserved for nav, timer sheet and the active indicator. */
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge), inset 0 -1px 0 color-mix(in oklab, white 6%, transparent);
   border-radius: var(--radius-2xl);
@@ -157,8 +161,7 @@
   position: relative;
   background:
     linear-gradient(180deg, color-mix(in oklab, white 7%, transparent), transparent 48%),
-    color-mix(in oklab, oklch(0.4 0.08 265) 16%, transparent);
-  backdrop-filter: blur(8px) saturate(140%);
+    color-mix(in oklab, oklch(0.38 0.08 265) 34%, transparent);
   border: 1px solid color-mix(in oklab, white 10%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in oklab, white 22%, transparent), 0 10px 24px -18px oklch(0.05 0.04 265 / 0.9);
   border-radius: var(--radius-xl);
@@ -180,6 +183,8 @@
   position: relative;
   isolation: isolate;
   border-radius: 26px;
+  contain: paint;
+  will-change: backdrop-filter;
   backdrop-filter: blur(var(--glass-blur-nav)) saturate(190%) brightness(1.05);
   background:
     linear-gradient(180deg, color-mix(in oklab, white 12%, transparent), transparent 38%),
@@ -273,8 +278,8 @@
   50% { opacity: 0.25; }
 }
 @keyframes screen-in {
-  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.985); filter: blur(6px); }
-  to { opacity: 1; transform: none; filter: blur(0); }
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.988); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes sheet-up {
   from { opacity: 0; transform: translate3d(0, 100%, 0); }
@@ -306,7 +311,7 @@
 .animate-digit-in { animation: digit-in 0.34s var(--ease-liquid) both; }
 .animate-digit-out { animation: digit-out 0.34s var(--ease-liquid) both; }
 .animate-colon { animation: colon-pulse 1s ease-in-out infinite; }
-.animate-screen { animation: screen-in 0.42s var(--ease-liquid) both; }
+.animate-screen { animation: screen-in 0.32s var(--ease-liquid) both; will-change: transform, opacity; }
 .animate-sheet { animation: sheet-up 0.44s var(--ease-liquid) both; }
 .animate-sheet-out { animation: sheet-down 0.32s cubic-bezier(0.4, 0, 1, 1) both; }
 .animate-scrim { animation: scrim-in 0.36s var(--ease-liquid) both; }

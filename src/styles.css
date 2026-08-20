@@ -377,3 +377,124 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ================= MOTION LAYER — premium animation pass ================= */
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translate3d(0, 22px, 0) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes bar-shimmer {
+  from { transform: translate3d(-140%, 0, 0); }
+  to { transform: translate3d(240%, 0, 0); }
+}
+@keyframes skeleton-sweep {
+  from { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(100%, 0, 0); }
+}
+@keyframes value-flash {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  35% { transform: translate3d(0, -2px, 0) scale(1.07); }
+  100% { transform: none; }
+}
+@keyframes icon-bounce {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  38% { transform: translate3d(0, -5px, 0) scale(1.16); }
+  70% { transform: translate3d(0, 1px, 0) scale(0.96); }
+  100% { transform: translate3d(0, -1px, 0) scale(1.08); }
+}
+@keyframes ring-halo {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.06); }
+}
+@keyframes glow-breathe {
+  0%, 100% { box-shadow: 0 12px 30px -18px oklch(0.7 0.18 272 / 0.7); }
+  50% { box-shadow: 0 16px 42px -14px oklch(0.72 0.19 275 / 0.95); }
+}
+@keyframes burst-ring {
+  from { opacity: 0.8; transform: scale(0.6); }
+  to { opacity: 0; transform: scale(1.9); }
+}
+@keyframes empty-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -5px, 0); }
+}
+@keyframes chip-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+.animate-reveal { animation: reveal-up 0.6s var(--ease-liquid) both; will-change: transform, opacity; }
+.animate-value { animation: value-flash 0.4s var(--ease-spring); }
+.animate-icon-bounce { animation: icon-bounce 0.44s var(--ease-spring); }
+.animate-glow { animation: glow-breathe 3.4s ease-in-out infinite; }
+.animate-float { animation: empty-float 3.6s ease-in-out infinite; }
+.animate-chip { animation: chip-in 0.4s var(--ease-spring) both; }
+.animate-burst { animation: burst-ring 0.55s var(--ease-liquid) forwards; }
+
+/* Scroll reveal: hidden until observed */
+.reveal-hidden { opacity: 0; transform: translate3d(0, 22px, 0); will-change: transform, opacity; }
+
+/* Ring completion halo */
+.ring-halo::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in oklab, var(--primary) 30%, transparent), transparent 68%);
+  animation: ring-halo 2.6s ease-in-out infinite;
+}
+
+/* Progress bar travelling shine */
+.bar-shine {
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, white 55%, transparent), transparent);
+    animation: bar-shimmer 2.2s var(--ease-liquid) infinite;
+  }
+}
+
+/* Skeleton loading surface */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, white 7%, transparent);
+  border-radius: var(--radius-xl);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, white 12%, transparent), transparent);
+    animation: skeleton-sweep 1.35s ease-in-out infinite;
+  }
+}
+
+/* Collapsible content driven by grid-template-rows (GPU-cheap, no JS height math) */
+.collapse-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.42s var(--ease-liquid), opacity 0.32s var(--ease-liquid);
+  opacity: 0;
+  & > * { overflow: hidden; min-height: 0; }
+}
+.collapse-grid[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
+
+/* Springy tactile press for pills / small controls */
+.press-spring {
+  transition: transform 0.26s var(--ease-spring), filter 0.2s var(--ease-liquid);
+  &:active { transform: scale(0.9); filter: brightness(1.12); }
+}
+
+/* Toggle track */
+.toggle-track {
+  transition: background-color 0.32s var(--ease-liquid), box-shadow 0.32s var(--ease-liquid);
+}
+.toggle-knob {
+  transition: transform 0.38s var(--ease-spring), background-color 0.3s var(--ease-liquid);
+}

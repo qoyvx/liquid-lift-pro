@@ -21,7 +21,17 @@ import {
   weekCompletion,
 } from "@/lib/store";
 import { tipForDate } from "@/lib/coaching";
-import { AnimatedNumber, Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
+import {
+  AnimatedNumber,
+  Card,
+  Collapse,
+  EmptyState,
+  Pill,
+  ProgressBar,
+  Reveal,
+  Ring,
+  SectionTitle,
+} from "@/components/app/ui";
 import { IconBolt, IconChevron, IconFlame, IconMoon, IconPlate, IconTimer } from "@/components/app/icons";
 
 export const Route = createFileRoute("/")({
@@ -134,6 +144,7 @@ function Home() {
                 to="/workout/$day"
                 params={{ day: plan.key }}
                 className="press mt-4 flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-sm font-extrabold tracking-[0.14em] uppercase"
+                // premium breathing glow on the primary CTA
                 style={{
                   background: "var(--gradient-primary)",
                   color: "oklch(0.14 0.035 265)",
@@ -157,6 +168,7 @@ function Home() {
       </section>
 
       {/* Weekly schedule */}
+      <Reveal>
       <section>
         <SectionTitle hint={`${wk.done}/${wk.total} sessions`}>Weekly schedule</SectionTitle>
         <div className="grid grid-cols-7 gap-1.5">
@@ -168,14 +180,18 @@ function Home() {
                 key={d.key}
                 to="/workout/$day"
                 params={{ day: d.key }}
-                className={`press-deep flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 text-center transition-all duration-500 ${
+                className={`press-spring animate-chip flex flex-col items-center justify-center gap-1 rounded-2xl py-2.5 text-center transition-all duration-500 ${
                   isToday ? "glass scale-[1.04]" : "glass-soft"
                 }`}
-                style={
-                  isToday
-                    ? { boxShadow: "inset 0 1px 0 var(--glass-edge), 0 10px 22px -14px oklch(0.7 0.18 270 / 0.9)" }
-                    : undefined
-                }
+                style={{
+                  animationDelay: `${i * 45}ms`,
+                  ...(isToday
+                    ? {
+                        boxShadow:
+                          "inset 0 1px 0 var(--glass-edge), 0 10px 22px -14px oklch(0.7 0.18 270 / 0.9)",
+                      }
+                    : {}),
+                }}
               >
                 <span
                   className="text-[0.55rem] font-extrabold tracking-[0.06em]"
@@ -201,8 +217,10 @@ function Home() {
           })}
         </div>
       </section>
+      </Reveal>
 
       {/* Program progress */}
+      <Reveal>
       <section>
         <SectionTitle hint={`Week ${week} of 12`}>Program progress</SectionTitle>
         <Card>
@@ -228,8 +246,10 @@ function Home() {
           </div>
         </Card>
       </section>
+      </Reveal>
 
       {/* Recovery */}
+      <Reveal>
       <section>
         <SectionTitle>Recovery & readiness</SectionTitle>
         <div className="grid grid-cols-2 gap-3">
@@ -252,8 +272,10 @@ function Home() {
           </p>
         </Card>
       </section>
+      </Reveal>
 
       {/* Nutrition */}
+      <Reveal>
       <section>
         <SectionTitle hint="Tap to log">Nutrition — today</SectionTitle>
         <div className="grid grid-cols-2 gap-3">
@@ -297,8 +319,10 @@ function Home() {
           Reset today's intake
         </button>
       </section>
+      </Reveal>
 
       {/* Coaching tip */}
+      <Reveal>
       <section>
         <SectionTitle hint="Daily">Today's coaching tip</SectionTitle>
         <Card onClick={() => setTipOpen((o) => !o)} className="p-5">
@@ -311,20 +335,25 @@ function Home() {
             <IconChevron
               width={18}
               height={18}
-              className="mt-1 shrink-0 text-muted-foreground transition-transform duration-300"
-              style={{ transform: tipOpen ? "rotate(90deg)" : "none" }}
+              className="mt-1 shrink-0 text-muted-foreground transition-transform duration-500"
+              style={{
+                transform: tipOpen ? "rotate(90deg) scale(1.15)" : "none",
+                transitionTimingFunction: "var(--ease-spring)",
+              }}
             />
           </div>
-          {tipOpen && (
-            <div className="animate-rise mt-4 space-y-3 border-t border-white/10 pt-4">
+          <Collapse open={tipOpen}>
+            <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
               <Block title="Why it matters" body={tip.why} />
               <Block title="Apply it to your program" body={tip.apply} />
             </div>
-          )}
+          </Collapse>
         </Card>
       </section>
+      </Reveal>
 
       {/* Principles shortcut */}
+      <Reveal>
       <section>
         <SectionTitle hint="18 topics">Training principles</SectionTitle>
         <Link to="/coach" className="press glass glass-sheen flex items-center gap-3 rounded-[var(--radius-2xl)] p-4">
@@ -340,23 +369,29 @@ function Home() {
           <IconChevron width={16} height={16} className="shrink-0 text-muted-foreground" />
         </Link>
       </section>
+      </Reveal>
 
       {/* Recent activity */}
+      <Reveal>
       <section>
         <SectionTitle>Recent activity</SectionTitle>
         {completed.length === 0 ? (
-          <Card className="p-5 text-center">
-            <p className="text-xs text-muted-foreground">
-              No completed sessions logged yet. Finish a workout and it will appear here.
-            </p>
-          </Card>
+          <EmptyState
+            icon={<IconBolt width={20} height={20} className="text-accent" />}
+            title="No sessions logged yet"
+            body="Finish a workout and it will appear here with your sets and volume."
+          />
         ) : (
           <div className="space-y-2">
-            {completed.map(([d, s]) => {
+            {completed.map(([d, s], ri) => {
               const p = PROGRAM.find((x) => x.key === s.dayKey);
               const done = Object.values(s.sets).flat().filter((x) => x.done).length;
               return (
-                <Card key={d} className="flex items-center gap-3 p-4">
+                <Card
+                  key={d}
+                  className="animate-chip flex items-center gap-3 p-4"
+                >
+                  <span className="hidden" style={{ animationDelay: `${ri * 60}ms` }} />
                   <div className="glass-soft grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[0.6rem] font-extrabold">
                     {p?.label ?? "—"}
                   </div>
@@ -374,6 +409,7 @@ function Home() {
           </div>
         )}
       </section>
+      </Reveal>
     </div>
   );
 }

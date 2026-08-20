@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PRINCIPLES } from "@/lib/coaching";
 import { rirForWeek } from "@/lib/program";
 import { programWeek, useStore } from "@/lib/store";
-import { Card, Pill, SectionTitle } from "@/components/app/ui";
+import { Card, Collapse, Pill, Reveal, SectionTitle } from "@/components/app/ui";
 import { IconChevron } from "@/components/app/icons";
 
 export const Route = createFileRoute("/coach")({
@@ -50,15 +50,19 @@ function Coach() {
 
       <SectionTitle hint={`${PRINCIPLES.length} principles`}>Principles library</SectionTitle>
       <div className="space-y-3">
-        {PRINCIPLES.map((p) => {
+        {PRINCIPLES.map((p, i) => {
           const expanded = open === p.id;
           return (
+            <Reveal key={p.id} delay={Math.min(i, 6) * 40}>
             <div
-              key={p.id}
-              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-300"
+              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-500"
               style={
                 expanded
-                  ? { boxShadow: "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)" }
+                  ? {
+                      boxShadow:
+                        "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)",
+                      transform: "scale(1.012)",
+                    }
                   : undefined
               }
             >
@@ -73,12 +77,15 @@ function Coach() {
                 <IconChevron
                   width={16}
                   height={16}
-                  className="mt-1 shrink-0 text-muted-foreground transition-transform duration-300"
-                  style={{ transform: expanded ? "rotate(90deg)" : "none" }}
+                  className="mt-1 shrink-0 text-muted-foreground transition-transform duration-500"
+                  style={{
+                    transform: expanded ? "rotate(90deg) scale(1.15)" : "none",
+                    transitionTimingFunction: "var(--ease-spring)",
+                  }}
                 />
               </button>
-              {expanded && (
-                <div className="animate-rise space-y-4 border-t border-white/10 p-4">
+              <Collapse open={expanded}>
+                <div className="space-y-4 border-t border-white/10 p-4">
                   <Block title="Why it matters" body={p.why} />
                   <Block title="Apply it to your program" body={p.apply} />
                   <div>
@@ -86,8 +93,18 @@ function Coach() {
                       Key points
                     </p>
                     <ul className="mt-2 space-y-1.5">
-                      {p.detail.map((d) => (
-                        <li key={d} className="flex gap-2 text-xs leading-relaxed text-muted-foreground">
+                      {p.detail.map((d, di) => (
+                        <li
+                          key={d}
+                          className="flex gap-2 text-xs leading-relaxed text-muted-foreground"
+                          style={
+                            expanded
+                              ? {
+                                  animation: `rise-in 0.4s var(--ease-liquid) ${0.08 + di * 0.05}s both`,
+                                }
+                              : undefined
+                          }
+                        >
                           <span
                             className="mt-1.5 h-1 w-1 shrink-0 rounded-full"
                             style={{ background: "var(--gradient-primary)" }}
@@ -98,8 +115,9 @@ function Coach() {
                     </ul>
                   </div>
                 </div>
-              )}
+              </Collapse>
             </div>
+            </Reveal>
           );
         })}
       </div>

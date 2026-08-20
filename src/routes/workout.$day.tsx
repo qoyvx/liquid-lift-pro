@@ -10,7 +10,7 @@ import {
   type AppState,
   type SetEntry,
 } from "@/lib/store";
-import { Card, Pill, ProgressBar, Ring, SectionTitle } from "@/components/app/ui";
+import { Card, Collapse, Pill, ProgressBar, Reveal, Ring, SectionTitle } from "@/components/app/ui";
 import { IconCheck, IconChevron, IconReset, IconTimer } from "@/components/app/icons";
 import { useRestTimer } from "@/components/app/RestTimer";
 
@@ -112,17 +112,22 @@ function WorkoutSession() {
 
       <SectionTitle hint="Tap to expand">Exercises</SectionTitle>
       <div className="space-y-3">
-        {plan.exercises.map((exercise) => {
+        {plan.exercises.map((exercise, ei) => {
           const sets = session.sets[exercise.id] ?? [];
           const doneCount = sets.filter((s) => s.done).length;
+          const allDone = doneCount === exercise.sets;
           const expanded = open === exercise.id;
           return (
+            <Reveal key={exercise.id} delay={Math.min(ei, 6) * 45}>
             <div
-              key={exercise.id}
-              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-300"
+              className="glass glass-sheen overflow-hidden rounded-[var(--radius-2xl)] transition-all duration-500"
               style={
                 expanded
-                  ? { boxShadow: "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)" }
+                  ? {
+                      boxShadow:
+                        "0 22px 46px -22px oklch(0.05 0.04 265 / 0.95), inset 0 1px 0 var(--glass-edge)",
+                      transform: "scale(1.012)",
+                    }
                   : undefined
               }
             >
@@ -136,19 +141,23 @@ function WorkoutSession() {
                     {exercise.sets} × {exercise.reps} · {exercise.rest}s rest
                   </p>
                 </div>
-                <span className="num shrink-0 text-[0.68rem] text-muted-foreground">
+                <span
+                  className={`num shrink-0 text-[0.68rem] transition-colors duration-500 ${allDone ? "animate-pop font-extrabold text-accent" : "text-muted-foreground"}`}
+                >
                   {doneCount}/{exercise.sets}
                 </span>
                 <IconChevron
                   width={16}
                   height={16}
-                  className="shrink-0 text-muted-foreground transition-transform duration-300"
-                  style={{ transform: expanded ? "rotate(90deg)" : "none" }}
+                  className="shrink-0 text-muted-foreground transition-transform duration-500"
+                  style={{
+                    transform: expanded ? "rotate(90deg) scale(1.15)" : "none",
+                    transitionTimingFunction: "var(--ease-spring)",
+                  }}
                 />
               </button>
-
-              {expanded && (
-                <div className="animate-rise space-y-2 border-t border-white/10 p-3">
+              <Collapse open={expanded}>
+                <div className="space-y-2 border-t border-white/10 p-3">
                   <div className="grid grid-cols-[1.6rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.2rem] gap-1.5 px-1 text-[0.52rem] font-bold tracking-[0.12em] text-muted-foreground uppercase">
                     <span>Set</span>
                     <span>KG</span>
@@ -160,6 +169,7 @@ function WorkoutSession() {
                     <SetRow
                       key={i}
                       index={i}
+                      delay={expanded ? 0.06 + i * 0.045 : 0}
                       entry={s}
                       prev={prevFor(history, exercise.id, key, i)}
                       onChange={(patch) => updateSet(exercise.id, i, patch)}
@@ -177,8 +187,9 @@ function WorkoutSession() {
                     <IconTimer width={13} height={13} /> Start {exercise.rest}s rest
                   </button>
                 </div>
-              )}
+              </Collapse>
             </div>
+            </Reveal>
           );
         })}
       </div>
@@ -188,6 +199,7 @@ function WorkoutSession() {
 
 function SetRow({
   index,
+  delay,
   entry,
   prev,
   onChange,
@@ -195,6 +207,7 @@ function SetRow({
   repsPlaceholder,
 }: {
   index: number;
+  delay?: number;
   entry: SetEntry;
   prev: { weight: string; reps: string; rir: string; date: string } | null;
   onChange: (patch: Partial<SetEntry>) => void;
@@ -202,7 +215,10 @@ function SetRow({
   repsPlaceholder: string;
 }) {
   return (
-    <div className="space-y-1">
+    <div
+      className="space-y-1"
+      style={delay ? { animation: `rise-in 0.4s var(--ease-liquid) ${delay}s both` } : undefined}
+    >
       <div className="grid grid-cols-[1.6rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_2.2rem] items-center gap-1.5">
         <span className="num text-center text-xs font-bold text-muted-foreground">{index + 1}</span>
         <NumField value={entry.weight} onChange={(v) => onChange({ weight: v })} placeholder={prev?.weight || "—"} />
@@ -211,14 +227,23 @@ function SetRow({
         <button
           onClick={() => onToggle(!entry.done)}
           aria-label={`Complete set ${index + 1}`}
-          className="press-deep grid h-9 w-9 place-items-center rounded-xl transition-all duration-300"
+          className="press-spring relative grid h-9 w-9 place-items-center rounded-xl transition-all duration-500"
           style={{
             background: entry.done ? "var(--gradient-primary)" : "oklch(1 0 0 / 0.07)",
             color: entry.done ? "oklch(0.14 0.035 265)" : "oklch(0.68 0.03 262)",
             border: "1px solid color-mix(in oklab, white 12%, transparent)",
             boxShadow: entry.done ? "0 8px 20px -10px oklch(0.7 0.18 270 / 0.9)" : "none",
+            transform: entry.done ? "scale(1.06)" : "none",
           }}
         >
+          {entry.done && (
+            <span
+              key={`burst-${entry.done}`}
+              aria-hidden
+              className="animate-burst pointer-events-none absolute inset-0 rounded-xl"
+              style={{ border: "2px solid color-mix(in oklab, var(--primary) 70%, transparent)" }}
+            />
+          )}
           <IconCheck width={15} height={15} className={entry.done ? "animate-pop" : ""} />
         </button>
       </div>

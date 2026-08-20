@@ -115,15 +115,23 @@ export function BottomNav() {
                 active={active}
                 width={21}
                 height={21}
-                className="transition-all duration-300"
+                key={`${t.to}-${active ? "on" : "off"}`}
+                className={`transition-all duration-300 ${active ? "animate-icon-bounce" : ""}`}
                 style={{
                   color: active ? "oklch(0.98 0.01 260)" : "oklch(0.68 0.03 262)",
                   transform: active ? "translateY(-1px) scale(1.08)" : "none",
+                  filter: active
+                    ? "drop-shadow(0 4px 10px color-mix(in oklab, var(--primary) 60%, transparent))"
+                    : "none",
                 }}
               />
               <span
-                className="text-[0.55rem] font-bold tracking-[0.1em] uppercase transition-colors duration-300"
-                style={{ color: active ? "oklch(0.95 0.01 260)" : "oklch(0.6 0.03 262)" }}
+                className="text-[0.55rem] font-bold tracking-[0.1em] uppercase transition-all duration-300"
+                style={{
+                  color: active ? "oklch(0.95 0.01 260)" : "oklch(0.6 0.03 262)",
+                  transform: active ? "translateY(1px) scale(1.04)" : "none",
+                  opacity: active ? 1 : 0.85,
+                }}
               >
                 {t.label}
               </span>
